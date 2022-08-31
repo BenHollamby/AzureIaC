@@ -11,7 +11,16 @@ function New-IASetup {
             HelpMessage = "Please enter region to deploy to, default is Australia East"
         )]
         [ArgumentCompleter({'australiaeast', 'australiasoutheast'})] #add more comma seperated regions here run "get-azlocation | Select-Object location" to get list all regions
-        [string]$Location = "australiaeast"
+        [string]$Location = "australiaeast",
+
+        [Parameter(
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName,
+            Position = 1,
+            HelpMessage = "Please enter the IPv4 address space. Default is 10.0.0.0/16"
+        )]
+        [ArgumentCompleter({'10.0.0.0/16','172.32.0.0/16','192.168.128.0/21'})]
+        [string]$VNet = "10.0.0.0/16"
 
     )
 
