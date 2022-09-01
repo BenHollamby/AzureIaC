@@ -52,19 +52,13 @@ function New-IASetup {
 
         if ($Custom) {
             
-            $AddressPrefix = Read-Host "Please enter the IPv4 address space: "
-            $sub_ProtectedSN = Read-Host "Please enter the subnet address for sub_Protected: "
-            #$sub_ProtectedSN = New-AzVirtualNetworkSubnetConfig -Name sub_Protected -AddressPrefix $sub_Protected
-            $sub_ExternalSN = Read-Host "Please enter the subnet address for sub_External: "
-            #$sub_ExternalSN = New-AzVirtualNetworkSubnetConfig -Name sub_Protected -AddressPrefix $sub_External
-            $sub_InternalSN = Read-Host "Please enter the subnet address for sub_Internal: "
-            #$sub_InternalSN = New-AzVirtualNetworkSubnetConfig -Name sub_Protected -AddressPrefix $sub_Internal
-            $sub_StorageSN = Read-Host "Please enter the subnet address for sub_Storage: "
-            #$sub_StorageSN = New-AzVirtualNetworkSubnetConfig -Name sub_Protected -AddressPrefix $sub_Storage
+            $AddressPrefix        = Read-Host "Please enter the IPv4 address space: "
+            $sub_ProtectedSN      = Read-Host "Please enter the subnet address for sub_Protected: "
+            $sub_ExternalSN       = Read-Host "Please enter the subnet address for sub_External: "
+            $sub_InternalSN       = Read-Host "Please enter the subnet address for sub_Internal: "
+            $sub_StorageSN        = Read-Host "Please enter the subnet address for sub_Storage: "
             $sub_VirtualDesktopSN = Read-Host "Please enter the subnet address for sub_VirtualDesktop: "
-            #$sub_VirtualDesktopSN = New-AzVirtualNetworkSubnetConfig -Name sub_Protected -AddressPrefix $sub_VirtualDesktop
-            $sub_ServerSN = Read-Host "Please enter the subnet address for sub_Server: "
-            #$sub_ServerSN = New-AzVirtualNetworkSubnetConfig -Name sub_Protected -AddressPrefix $sub_Server
+            $sub_ServerSN         = Read-Host "Please enter the subnet address for sub_Server: "
 
             $VirtualNetwork = New-AzVirtualNetwork -Name VN_Core -ResourceGroupName RG_Networking -Location $Location -AddressPrefix $AddressPrefix
 
