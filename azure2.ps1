@@ -66,63 +66,96 @@ function New-IASetup {
             $sub_ServerSN = Read-Host "Please enter the subnet address for sub_Server: "
             #$sub_ServerSN = New-AzVirtualNetworkSubnetConfig -Name sub_Protected -AddressPrefix $sub_Server
 
-            New-AzVirtualNetwork -Name VN_Core -ResourceGroupName RG_Networking -Location $Location -AddressPrefix $AddressPrefix -Subnet $sub_ProtectedSN, $sub_ExternalSN, $sub_InternalSN, $sub_StorageSN, $sub_VirtualDesktopSN, $sub_ServerSN -Force:$true | Out-Null
-            #$updatevnet | Set-AzVirtualNetwork | Out-Null
+            $VirtualNetwork = New-AzVirtualNetwork -Name VN_Core -ResourceGroupName RG_Networking -Location $Location -AddressPrefix $AddressPrefix
+
+            $sub_protected = New-AzVirtualNetworkSubnetConfig -Name 'sub_Protected' -AddressPrefix $sub_ProtectedSN
+            $VirtualNetwork.Subnets.Add($sub_Protected)
+            Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
+
+            $sub_External = New-AzVirtualNetworkSubnetConfig -Name 'sub_External' -AddressPrefix $sub_ExternalSN
+            $VirtualNetwork.Subnets.Add($sub_External)
+            Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
+
+            $sub_Internal = New-AzVirtualNetworkSubnetConfig -Name 'sub_Internal' -AddressPrefix $sub_InternalSN
+            $VirtualNetwork.Subnets.Add($sub_Internal)
+            Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
+
+            $sub_Storage = New-AzVirtualNetworkSubnetConfig -Name 'sub_Storage' -AddressPrefix $sub_StorageSN
+            $VirtualNetwork.Subnets.Add($sub_Storage)
+            Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
+
+            $sub_VirtualDesktop = New-AzVirtualNetworkSubnetConfig -Name 'sub_VirtualDesktop' -AddressPrefix $sub_VirtualDesktopSN
+            $VirtualNetwork.Subnets.Add($sub_VirtualDesktop)
+            Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
+
+            $sub_Server = New-AzVirtualNetworkSubnetConfig -Name 'sub_Server' -AddressPrefix $sub_ServerSN
+            $VirtualNetwork.Subnets.Add($sub_Server)
+            Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
+
         
         } 
         
         if ($VNet) {
             
-            New-AzVirtualNetwork -Name VN_Core -ResourceGroupName RG_Networking -AddressPrefix $VNet -Location $Location | Out-Null
+            $VirtualNetworks = New-AzVirtualNetwork -Name VN_Core -ResourceGroupName RG_Networking -AddressPrefix $VNet -Location $Location
 
+            $sub_ProtectedSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Protected -AddressPrefix $Subnet #| Out-Null
+            $VirtualNetworks.Subnets.Add($sub_ProtectedSN1)
+            Set-AzVirtualNetwork -VirtualNetwork $VirtualNetworks | Out-Null
+
+            $sc = $Subnet.Split(".").Split("/")
+            $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
+            $c = [int]$c + 1
+            $e = 24
+            $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
+            $sub_ExternalSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_External -AddressPrefix $Subnet #| Out-Null
+            $VirtualNetworks.Subnets.Add($sub_ExternalSN1)
+            Set-AzVirtualNetwork -VirtualNetwork $VirtualNetworks | Out-Null
+            
+
+            $sc = $Subnet.Split(".").Split("/")
+            $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
+            $c = [int]$c + 1
+            $e = 24
+            $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
+            $sub_InternalSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Internal -AddressPrefix $Subnet #| Out-Null
+            $VirtualNetworks.Subnets.Add($sub_InternalSN1)
+            Set-AzVirtualNetwork -VirtualNetwork $VirtualNetworks | Out-Null
+
+            $sc = $Subnet.Split(".").Split("/")
+            $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
+            $c = [int]$c + 1
+            $e = 24
+            $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
+            $sub_StorageSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Storage -AddressPrefix $Subnet #| Out-Null
+            $VirtualNetworks.Subnets.Add($sub_StorageSN1)
+            Set-AzVirtualNetwork -VirtualNetwork $VirtualNetworks | Out-Null
+
+            $sc = $Subnet.Split(".").Split("/")
+            $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
+            $c = [int]$c + 1
+            $e = 24
+            $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
+            $sub_VirtualDesktopSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_VirtualDesktop -AddressPrefix $Subnet #| Out-Null
+            $VirtualNetworks.Subnets.Add($sub_VirtualDesktopSN1)
+            Set-AzVirtualNetwork -VirtualNetwork $VirtualNetworks | Out-Null
+
+            $sc = $Subnet.Split(".").Split("/")
+            $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
+            $c = [int]$c + 1
+            $e = 24
+            $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
+            $sub_ServerSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Server -AddressPrefix $Subnet #| Out-Null
+            $VirtualNetworks.Subnets.Add($sub_ServerSN1)
+            Set-AzVirtualNetwork -VirtualNetwork $VirtualNetworks | Out-Null
+            
+            
         }
 
-        if ($Subnet) {
-
-            $sub_ProtectedSN = New-AzVirtualNetworkSubnetConfig -Name sub_Protected -AddressPrefix $Subnet | Out-Null
-
-            $sc = $Subnet.Split(".").Split("/")
-            $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
-            $c = [int]$c + 1
-            $e = 24
-            $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
-            $sub_ExternalSN = New-AzVirtualNetworkSubnetConfig -Name sub_External -AddressPrefix $Subnet | Out-Null
-
-            $sc = $Subnet.Split(".").Split("/")
-            $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
-            $c = [int]$c + 1
-            $e = 24
-            $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
-            $sub_InternalSN = New-AzVirtualNetworkSubnetConfig -Name sub_Internal -AddressPrefix $Subnet | Out-Null
-
-            $sc = $Subnet.Split(".").Split("/")
-            $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
-            $c = [int]$c + 1
-            $e = 24
-            $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
-            $sub_StorageSN = New-AzVirtualNetworkSubnetConfig -Name sub_Storage -AddressPrefix $Subnet | Out-Null
-
-            $sc = $Subnet.Split(".").Split("/")
-            $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
-            $c = [int]$c + 1
-            $e = 24
-            $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
-            $sub_VirtualDesktopSN = New-AzVirtualNetworkSubnetConfig -Name sub_VirtualDesktop -AddressPrefix $Subnet | Out-Null
-
-            $sc = $Subnet.Split(".").Split("/")
-            $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
-            $c = [int]$c + 1
-            $e = 24
-            $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
-            $sub_ServerSN = New-AzVirtualNetworkSubnetConfig -Name sub_Server -AddressPrefix $Subnet | Out-Null
-
-            $updatevnet = New-AzVirtualNetwork -Name VN_Core -ResourceGroupName RG_Networking -Location $Location -AddressPrefix $VNet -Subnet $sub_ProtectedSN, $sub_ExternalSN, $sub_InternalSN, $sub_StorageSN, $sub_VirtualDesktopSN, $sub_ServerSN -Force:$true | Out-Null
-            $updatevnet | Set-AzVirtualNetwork | Out-Null
-            }
-        
     }
 
     END {
 
     }
+    
 }
