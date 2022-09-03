@@ -1,3 +1,4 @@
+Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
 function New-IASetup {
 
     [cmdletbinding(DefaultParameterSetName='vnet')]
@@ -53,13 +54,13 @@ function New-IASetup {
 
         if ($Custom) {
             
-            $AddressPrefix        = Read-Host "Please enter the IPv4 address space: "
-            $sub_ProtectedSN      = Read-Host "Please enter the subnet address for sub_Protected: "
-            $sub_ExternalSN       = Read-Host "Please enter the subnet address for sub_External: "
-            $sub_InternalSN       = Read-Host "Please enter the subnet address for sub_Internal: "
-            $sub_StorageSN        = Read-Host "Please enter the subnet address for sub_Storage: "
-            $sub_VirtualDesktopSN = Read-Host "Please enter the subnet address for sub_VirtualDesktop: "
-            $sub_ServerSN         = Read-Host "Please enter the subnet address for sub_Server: "
+            $AddressPrefix        = Read-Host "Please enter the IPv4 address space"
+            $sub_ProtectedSN      = Read-Host "Please enter the subnet address for sub_Protected"
+            $sub_ExternalSN       = Read-Host "Please enter the subnet address for sub_External"
+            $sub_InternalSN       = Read-Host "Please enter the subnet address for sub_Internal"
+            $sub_StorageSN        = Read-Host "Please enter the subnet address for sub_Storage"
+            $sub_VirtualDesktopSN = Read-Host "Please enter the subnet address for sub_VirtualDesktop"
+            $sub_ServerSN         = Read-Host "Please enter the subnet address for sub_Server"
 
             $VirtualNetwork = New-AzVirtualNetwork -Name VN_Core -ResourceGroupName RG_Networking -Location $Location -AddressPrefix $AddressPrefix
 
@@ -111,6 +112,21 @@ function New-IASetup {
                 -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange *
 
             New-AzNetworkSecurityGroup -ResourceGroupName "RG_Networking" -Location $Location -Name "NSG_Firewall_External" -SecurityRules $rule1,$rule2,$rule3,$rule4 | Out-Null
+
+            #PublicIP
+            New-AzPublicIpAddress -Name "FGT_PublicIP" -ResourceGroupName "RG_Networking" -Location $Location -Sku Basic -AllocationMethod Static -IpAddressVersion IPv4 | Out-Null
+
+            #Internal FGT interface
+            $GetInternalNIC = Get-AzVirtualNetwork
+            $SubnetID = $GetInternalNIC.subnets | Where-Object name -eq sub_Internal | Select-Object -ExpandProperty Id
+            New-AzNetworkInterface -Name "INT_FGT_NWI" -ResourceGroupName "RG_Networking" -Location $Location -SubnetId $SubnetID -EnableIPForwarding | Out-Null
+
+            #External FGT Interface
+            $PublicIP = (Get-AzPublicIpAddress).Id
+            $NSG = (Get-AzNetworkSecurityGroup).Id
+            $GetExternalNICSubnet = Get-AzVirtualNetwork
+            $SubnetID = $GetExternalNICSubnet.subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty Id
+            New-AzNetworkInterface -Name "EXT_FGT_NWI" -ResourceGroupName "RG_Networking" -Location $Location -SubnetId $SubnetID -PublicIpAddressId $PublicIP -NetworkSecurityGroupId $NSG -EnableIPForwarding | Out-Null
    
         } 
         
@@ -193,6 +209,22 @@ function New-IASetup {
                 -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange *
 
             New-AzNetworkSecurityGroup -ResourceGroupName "RG_Networking" -Location $Location -Name "NSG_Firewall_External" -SecurityRules $rule1,$rule2,$rule3,$rule4 | Out-Null
+
+            #PublicIP
+            New-AzPublicIpAddress -Name "FGT_PublicIP" -ResourceGroupName "RG_Networking" -Location $Location -Sku Basic -AllocationMethod Static -IpAddressVersion IPv4 | Out-Null
+
+            #Internal FGT interface
+            $GetInternalNIC = Get-AzVirtualNetwork
+            $SubnetID = $GetInternalNIC.subnets | Where-Object name -eq sub_Internal | Select-Object -ExpandProperty Id
+            New-AzNetworkInterface -Name "INT_FGT_NWI" -ResourceGroupName "RG_Networking" -Location $Location -SubnetId $SubnetID -EnableIPForwarding | Out-Null
+
+            #External FGT Interface
+            $PublicIP = (Get-AzPublicIpAddress).Id
+            $NSG = (Get-AzNetworkSecurityGroup).Id
+            $GetExternalNICSubnet = Get-AzVirtualNetwork
+            $SubnetID = $GetExternalNICSubnet.subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty Id
+            New-AzNetworkInterface -Name "EXT_FGT_NWI" -ResourceGroupName "RG_Networking" -Location $Location -SubnetId $SubnetID -PublicIpAddressId $PublicIP -NetworkSecurityGroupId $NSG -EnableIPForwarding | Out-Null
+
         }
 
     }
@@ -203,10 +235,7 @@ function New-IASetup {
     
 }
 
-#nsg NSG_Firewall_External | external subnet
-#int nic
-#ext nic
 
-#public IP
+#idiot proof needed in custom
 
 #Custom needs location prompt
