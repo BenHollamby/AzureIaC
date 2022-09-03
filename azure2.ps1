@@ -11,7 +11,7 @@ function New-IASetup {
             HelpMessage = "Please enter region to deploy to, default is Australia East"
         )]
         [ArgumentCompleter({'australiaeast', 'australiasoutheast'})] #add more comma seperated regions here run "get-azlocation | Select-Object location" to get list all regions
-        [string]$Location = "australiaeast",
+        [string]$Location = "australiasoutheast",
 
         [Parameter(
             ValueFromPipeline,
@@ -36,6 +36,7 @@ function New-IASetup {
             HelpMessage = 'prompt for address space and subnets'
         )]
         [Switch]$Custom
+
     )
 
     BEGIN {
@@ -86,7 +87,31 @@ function New-IASetup {
             $VirtualNetwork.Subnets.Add($sub_Server)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
 
-        
+            #NSG
+            $ExternalIPRange = ($external = Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty addressprefix 
+            $sei = $ExternalIPRange.split(".").Split("/")
+            $a,$b,$c,$d,$e = $sei[0], $sei[1], $sei[2], $sei[3], $sei[4]
+            $d = 4
+            $DestinationAddressPrefix = $a + "." + $b + "." + $c + "." + $d
+
+            $rule1 = New-AzNetworkSecurityRuleConfig -Name Allow_FW_Management -Description "Allows firewall management" `
+                -Access Allow -Protocol Tcp -Direction Inbound -Priority 150 -SourceAddressPrefix * `
+                -SourcePortRange * -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange 11443
+
+            $rule2 = New-AzNetworkSecurityRuleConfig -Name Allow_ICMP -Description "Allow Ping" `
+                -Access Allow -Protocol Icmp -Direction Inbound -Priority 151 -SourceAddressPrefix * `
+                -SourcePortRange * -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange *
+
+            $rule3 = New-AzNetworkSecurityRuleConfig -Name Fortigate_SSL_VPN -Description "Allow VPN traffic" `
+                -Access Allow -Protocol * -Direction Inbound -Priority 180 -SourceAddressPrefix * `
+                -SourcePortRange * -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange 9443
+
+            $rule4 = New-AzNetworkSecurityRuleConfig -Name Deny_All -Description "Deny" `
+                -Access Deny -Protocol * -Direction Inbound -Priority 4096 -SourceAddressPrefix * `
+                -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange *
+
+            New-AzNetworkSecurityGroup -ResourceGroupName "RG_Networking" -Location $Location -Name "NSG_Firewall_External" -SecurityRules $rule1,$rule2,$rule3,$rule4 | Out-Null
+   
         } 
         
         if ($VNet) {
@@ -142,8 +167,32 @@ function New-IASetup {
             $sub_ServerSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Server -AddressPrefix $Subnet #| Out-Null
             $VirtualNetworks.Subnets.Add($sub_ServerSN1)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetworks | Out-Null
-            
-            
+
+
+            #NSG
+            $ExternalIPRange = ($external = Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty addressprefix 
+            $sei = $ExternalIPRange.split(".").Split("/")
+            $a,$b,$c,$d,$e = $sei[0], $sei[1], $sei[2], $sei[3], $sei[4]
+            $d = 4
+            $DestinationAddressPrefix = $a + "." + $b + "." + $c + "." + $d
+
+            $rule1 = New-AzNetworkSecurityRuleConfig -Name Allow_FW_Management -Description "Allows firewall management" `
+                -Access Allow -Protocol Tcp -Direction Inbound -Priority 150 -SourceAddressPrefix * `
+                -SourcePortRange * -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange 11443
+
+            $rule2 = New-AzNetworkSecurityRuleConfig -Name Allow_ICMP -Description "Allow Ping" `
+                -Access Allow -Protocol Icmp -Direction Inbound -Priority 151 -SourceAddressPrefix * `
+                -SourcePortRange * -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange *
+
+            $rule3 = New-AzNetworkSecurityRuleConfig -Name Fortigate_SSL_VPN -Description "Allow VPN traffic" `
+                -Access Allow -Protocol * -Direction Inbound -Priority 180 -SourceAddressPrefix * `
+                -SourcePortRange * -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange 9443
+
+            $rule4 = New-AzNetworkSecurityRuleConfig -Name Deny_All -Description "Deny" `
+                -Access Deny -Protocol * -Direction Inbound -Priority 4096 -SourceAddressPrefix * `
+                -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange *
+
+            New-AzNetworkSecurityGroup -ResourceGroupName "RG_Networking" -Location $Location -Name "NSG_Firewall_External" -SecurityRules $rule1,$rule2,$rule3,$rule4 | Out-Null
         }
 
     }
@@ -153,3 +202,11 @@ function New-IASetup {
     }
     
 }
+
+#nsg NSG_Firewall_External | external subnet
+#int nic
+#ext nic
+
+#public IP
+
+#Custom needs location prompt
