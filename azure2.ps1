@@ -20,7 +20,7 @@ function New-IASetup {
             ParameterSetName='vnet',
             HelpMessage = "Please enter the IPv4 address space. Default is 10.0.0.0/16"
         )]
-        [ArgumentCompleter({'10.0.0.0/16','172.32.0.0/16','192.168.128.0/21'})]
+        [ArgumentCompleter({'10.0.0.0/16','172.32.0.0/16','192.168.0.0/16'})]
         [string]$VNet,
 
         [Parameter(
