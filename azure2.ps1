@@ -64,6 +64,8 @@ function New-IASetup {
 
             $VirtualNetwork = New-AzVirtualNetwork -Name VN_Core -ResourceGroupName RG_Networking -Location $Location -AddressPrefix $AddressPrefix
 
+            $RouteTable = New-AzRouteTable -ResourceGroupName 'RG_Networking' -Name 'Route-Table' -Location $Location
+
             $sub_protected = New-AzVirtualNetworkSubnetConfig -Name 'sub_Protected' -AddressPrefix $sub_ProtectedSN
             $VirtualNetwork.Subnets.Add($sub_Protected)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
@@ -72,19 +74,19 @@ function New-IASetup {
             $VirtualNetwork.Subnets.Add($sub_External)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
 
-            $sub_Internal = New-AzVirtualNetworkSubnetConfig -Name 'sub_Internal' -AddressPrefix $sub_InternalSN
+            $sub_Internal = New-AzVirtualNetworkSubnetConfig -Name 'sub_Internal' -AddressPrefix $sub_InternalSN -RouteTable $RouteTable
             $VirtualNetwork.Subnets.Add($sub_Internal)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
 
-            $sub_Storage = New-AzVirtualNetworkSubnetConfig -Name 'sub_Storage' -AddressPrefix $sub_StorageSN
+            $sub_Storage = New-AzVirtualNetworkSubnetConfig -Name 'sub_Storage' -AddressPrefix $sub_StorageSN -RouteTable $RouteTable
             $VirtualNetwork.Subnets.Add($sub_Storage)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
 
-            $sub_VirtualDesktop = New-AzVirtualNetworkSubnetConfig -Name 'sub_VirtualDesktop' -AddressPrefix $sub_VirtualDesktopSN
+            $sub_VirtualDesktop = New-AzVirtualNetworkSubnetConfig -Name 'sub_VirtualDesktop' -AddressPrefix $sub_VirtualDesktopSN -RouteTable $RouteTable
             $VirtualNetwork.Subnets.Add($sub_VirtualDesktop)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
 
-            $sub_Server = New-AzVirtualNetworkSubnetConfig -Name 'sub_Server' -AddressPrefix $sub_ServerSN
+            $sub_Server = New-AzVirtualNetworkSubnetConfig -Name 'sub_Server' -AddressPrefix $sub_ServerSN -RouteTable $RouteTable
             $VirtualNetwork.Subnets.Add($sub_Server)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
 
@@ -132,7 +134,11 @@ function New-IASetup {
         
         if ($VNet) {
             
+            #VNET
             $VirtualNetworks = New-AzVirtualNetwork -Name VN_Core -ResourceGroupName RG_Networking -AddressPrefix $VNet -Location $Location
+
+            #ROUTE-TABLE
+            $RouteTable = New-AzRouteTable -ResourceGroupName 'RG_Networking' -Name 'Route-Table' -Location $Location
 
             $sub_ProtectedSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Protected -AddressPrefix $Subnet #| Out-Null
             $VirtualNetworks.Subnets.Add($sub_ProtectedSN1)
@@ -153,7 +159,7 @@ function New-IASetup {
             $c = [int]$c + 1
             $e = 24
             $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
-            $sub_InternalSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Internal -AddressPrefix $Subnet #| Out-Null
+            $sub_InternalSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Internal -AddressPrefix $Subnet -RouteTable $RouteTable #| Out-Null
             $VirtualNetworks.Subnets.Add($sub_InternalSN1)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetworks | Out-Null
 
@@ -162,7 +168,7 @@ function New-IASetup {
             $c = [int]$c + 1
             $e = 24
             $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
-            $sub_StorageSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Storage -AddressPrefix $Subnet #| Out-Null
+            $sub_StorageSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Storage -AddressPrefix $Subnet -RouteTable $RouteTable #| Out-Null
             $VirtualNetworks.Subnets.Add($sub_StorageSN1)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetworks | Out-Null
 
@@ -171,7 +177,7 @@ function New-IASetup {
             $c = [int]$c + 1
             $e = 24
             $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
-            $sub_VirtualDesktopSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_VirtualDesktop -AddressPrefix $Subnet #| Out-Null
+            $sub_VirtualDesktopSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_VirtualDesktop -AddressPrefix $Subnet -RouteTable $RouteTable #| Out-Null
             $VirtualNetworks.Subnets.Add($sub_VirtualDesktopSN1)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetworks | Out-Null
 
@@ -180,7 +186,7 @@ function New-IASetup {
             $c = [int]$c + 1
             $e = 24
             $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
-            $sub_ServerSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Server -AddressPrefix $Subnet #| Out-Null
+            $sub_ServerSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Server -AddressPrefix $Subnet -RouteTable $RouteTable #| Out-Null
             $VirtualNetworks.Subnets.Add($sub_ServerSN1)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetworks | Out-Null
 
@@ -239,3 +245,11 @@ function New-IASetup {
 #idiot proof needed in custom
 
 #Custom needs location prompt
+
+<#
+$vnet = Get-AzVirtualNetwork
+$rt = get-azroutetable
+$subnet = New-AzVirtualNetworkSubnetConfig -name 'sub-protty' -AddressPrefix 10.0.2.0/24 -RouteTable $rt
+$vnet.Subnets.Add($subnet)
+Set-AzVirtualNetwork -VirtualNetwork $vnet
+#>
