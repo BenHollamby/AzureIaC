@@ -90,6 +90,14 @@ function New-IASetup {
             $VirtualNetwork.Subnets.Add($sub_Server)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
 
+            $InternalSN = ($Internal = Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_Internal | Select-Object -ExpandProperty addressprefix
+            $iip = $InternalSN.split(".").split("/")
+            $a,$b,$c,$d,$e = $iip[0], $iip[1], $iip[2], $iip[3], $iip[4]
+            $d = 4
+            $NextHopIP = $a + "." + $b + "." + $c + "." + $d
+           
+            Get-AzRouteTable -ResourceGroupName "RG_Networking" -Name "Route-Table" | Add-AzRouteConfig -Name "Default-Route" -AddressPrefix 0.0.0.0/0 -NextHopType "VirtualAppliance" -NextHopIpAddress $NextHopIP | Set-AzRouteTable | Out-Null
+
             #NSG
             $ExternalIPRange = ($external = Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty addressprefix 
             $sei = $ExternalIPRange.split(".").Split("/")
@@ -138,6 +146,7 @@ function New-IASetup {
             $VirtualNetworks = New-AzVirtualNetwork -Name VN_Core -ResourceGroupName RG_Networking -AddressPrefix $VNet -Location $Location
 
             #ROUTE-TABLE
+            #$Route = New-AzRouteConfig -Name 'Default-Route' -AddressPrefix 0.0.0.0/24 -NextHopType VirtualAppliance -NextHopIpAddress 0.0.0.0
             $RouteTable = New-AzRouteTable -ResourceGroupName 'RG_Networking' -Name 'Route-Table' -Location $Location
 
             $sub_ProtectedSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Protected -AddressPrefix $Subnet #| Out-Null
@@ -190,6 +199,13 @@ function New-IASetup {
             $VirtualNetworks.Subnets.Add($sub_ServerSN1)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetworks | Out-Null
 
+            $InternalSN = ($Internal = Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_Internal | Select-Object -ExpandProperty addressprefix
+            $iip = $InternalSN.split(".").split("/")
+            $a,$b,$c,$d,$e = $iip[0], $iip[1], $iip[2], $iip[3], $iip[4]
+            $d = 4
+            $NextHopIP = $a + "." + $b + "." + $c + "." + $d
+           
+            Get-AzRouteTable -ResourceGroupName "RG_Networking" -Name "Route-Table" | Add-AzRouteConfig -Name "Default-Route" -AddressPrefix 0.0.0.0/0 -NextHopType "VirtualAppliance" -NextHopIpAddress $NextHopIP | Set-AzRouteTable | Out-Null
 
             #NSG
             $ExternalIPRange = ($external = Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty addressprefix 
@@ -252,4 +268,10 @@ $rt = get-azroutetable
 $subnet = New-AzVirtualNetworkSubnetConfig -name 'sub-protty' -AddressPrefix 10.0.2.0/24 -RouteTable $rt
 $vnet.Subnets.Add($subnet)
 Set-AzVirtualNetwork -VirtualNetwork $vnet
+
+
+
+
+
+#Get-AzRouteTable -ResourceGroupName "RG_Networking" -Name "Route-Table" | Add-AzRouteConfig -Name "Default-Route1" -AddressPrefix 0.0.0.0/0 -NextHopType "VirtualAppliance" -NextHopIpAddress $nexthopip | Set-AzRouteTable
 #>
