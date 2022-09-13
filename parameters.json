@@ -1,0 +1,21 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachines_TA_Azure_FGT_P01_name": {
+            "value": null
+        },
+        "disks_disk_TA_Azure_FGT_P01_OSDisk_externalid": {
+            "value": null
+        },
+        "disks_disk_TA_Azure_FGT_P01_DataDisk_externalid": {
+            "value": null
+        },
+        "networkInterfaces_int_TA_Azure_FGT_P01_External_externalid": {
+            "value": null
+        },
+        "networkInterfaces_int_TA_Azure_FGT_P01_Internal_externalid": {
+            "value": null
+        }
+    }
+}
