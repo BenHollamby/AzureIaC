@@ -90,7 +90,7 @@ function New-IASetup {
             $VirtualNetwork.Subnets.Add($sub_Server)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork | Out-Null
 
-            $InternalSN = ($Internal = Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_Internal | Select-Object -ExpandProperty addressprefix
+            $InternalSN = (Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_Internal | Select-Object -ExpandProperty addressprefix
             $iip = $InternalSN.split(".").split("/")
             $a,$b,$c,$d,$e = $iip[0], $iip[1], $iip[2], $iip[3], $iip[4]
             $d = 4
@@ -99,7 +99,7 @@ function New-IASetup {
             Get-AzRouteTable -ResourceGroupName "RG_Networking" -Name "Route-Table" | Add-AzRouteConfig -Name "Default-Route" -AddressPrefix 0.0.0.0/0 -NextHopType "VirtualAppliance" -NextHopIpAddress $NextHopIP | Set-AzRouteTable | Out-Null
 
             #NSG
-            $ExternalIPRange = ($external = Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty addressprefix 
+            $ExternalIPRange = (Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty addressprefix 
             $sei = $ExternalIPRange.split(".").Split("/")
             $a,$b,$c,$d,$e = $sei[0], $sei[1], $sei[2], $sei[3], $sei[4]
             $d = 4
@@ -156,7 +156,7 @@ function New-IASetup {
             $sc = $Subnet.Split(".").Split("/")
             $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
             $c = [int]$c + 1
-            $e = 24
+            #$e = 24
             $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
             $sub_ExternalSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_External -AddressPrefix $Subnet #| Out-Null
             $VirtualNetworks.Subnets.Add($sub_ExternalSN1)
@@ -166,7 +166,7 @@ function New-IASetup {
             $sc = $Subnet.Split(".").Split("/")
             $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
             $c = [int]$c + 1
-            $e = 24
+            #$e = 24
             $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
             $sub_InternalSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Internal -AddressPrefix $Subnet -RouteTable $RouteTable #| Out-Null
             $VirtualNetworks.Subnets.Add($sub_InternalSN1)
@@ -175,7 +175,7 @@ function New-IASetup {
             $sc = $Subnet.Split(".").Split("/")
             $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
             $c = [int]$c + 1
-            $e = 24
+            #$e = 24
             $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
             $sub_StorageSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Storage -AddressPrefix $Subnet -RouteTable $RouteTable #| Out-Null
             $VirtualNetworks.Subnets.Add($sub_StorageSN1)
@@ -184,7 +184,7 @@ function New-IASetup {
             $sc = $Subnet.Split(".").Split("/")
             $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
             $c = [int]$c + 1
-            $e = 24
+            #$e = 24
             $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
             $sub_VirtualDesktopSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_VirtualDesktop -AddressPrefix $Subnet -RouteTable $RouteTable #| Out-Null
             $VirtualNetworks.Subnets.Add($sub_VirtualDesktopSN1)
@@ -193,13 +193,13 @@ function New-IASetup {
             $sc = $Subnet.Split(".").Split("/")
             $a,$b,$c,$d,$e = $sc[0],$sc[1],$sc[2],$sc[3],$sc[4]
             $c = [int]$c + 1
-            $e = 24
+            #$e = 24
             $subnet = $a + "." + $b + "." + $c + "." + $d + "/" + $e
             $sub_ServerSN1 = New-AzVirtualNetworkSubnetConfig -Name sub_Server -AddressPrefix $Subnet -RouteTable $RouteTable #| Out-Null
             $VirtualNetworks.Subnets.Add($sub_ServerSN1)
             Set-AzVirtualNetwork -VirtualNetwork $VirtualNetworks | Out-Null
 
-            $InternalSN = ($Internal = Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_Internal | Select-Object -ExpandProperty addressprefix
+            $InternalSN = (Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_Internal | Select-Object -ExpandProperty addressprefix
             $iip = $InternalSN.split(".").split("/")
             $a,$b,$c,$d,$e = $iip[0], $iip[1], $iip[2], $iip[3], $iip[4]
             $d = 4
@@ -208,7 +208,7 @@ function New-IASetup {
             Get-AzRouteTable -ResourceGroupName "RG_Networking" -Name "Route-Table" | Add-AzRouteConfig -Name "Default-Route" -AddressPrefix 0.0.0.0/0 -NextHopType "VirtualAppliance" -NextHopIpAddress $NextHopIP | Set-AzRouteTable | Out-Null
 
             #NSG
-            $ExternalIPRange = ($external = Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty addressprefix 
+            $ExternalIPRange = (Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty addressprefix 
             $sei = $ExternalIPRange.split(".").Split("/")
             $a,$b,$c,$d,$e = $sei[0], $sei[1], $sei[2], $sei[3], $sei[4]
             $d = 4
@@ -256,22 +256,3 @@ function New-IASetup {
     }
     
 }
-
-
-#idiot proof needed in custom
-
-#Custom needs location prompt
-
-<#
-$vnet = Get-AzVirtualNetwork
-$rt = get-azroutetable
-$subnet = New-AzVirtualNetworkSubnetConfig -name 'sub-protty' -AddressPrefix 10.0.2.0/24 -RouteTable $rt
-$vnet.Subnets.Add($subnet)
-Set-AzVirtualNetwork -VirtualNetwork $vnet
-
-
-
-
-
-#Get-AzRouteTable -ResourceGroupName "RG_Networking" -Name "Route-Table" | Add-AzRouteConfig -Name "Default-Route1" -AddressPrefix 0.0.0.0/0 -NextHopType "VirtualAppliance" -NextHopIpAddress $nexthopip | Set-AzRouteTable
-#>
