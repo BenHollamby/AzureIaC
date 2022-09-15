@@ -4,6 +4,11 @@ function New-IASetup {
     <#
     .SYNOPSIS
     New-IASetup (New Ignite Azure Setup) will create multiple resource based on an existing best practice configuration.
+    You will need the AZ module installed, (Install-Module AZ), and you will need to connect to the subscription with
+    Connect-AzAccount.
+    For accounts with multiple subscriptions, you will want to check you are connected to the correct subscription
+    with Get-AzContext. If you the subscription is wrong you can change to another via Set-AzContext <SubscriptionID>.
+    PLEASE CHECK YOU ARE IN THE CORRECT TENANT AND SUBSCRIPTION BEFORE DEPLOYING.
     .DESCRIPTION
     New-IASetup will create 5 resource groups named RG_Networking, RG_Backup, RG_Server, 
     RG_Storage, and RG_VirtualDesktop.
@@ -17,19 +22,93 @@ function New-IASetup {
     and sets the next hop IP address to X.X.X.4 based on the subnet sub_Internal's address space. It attaches 
     the following subnets, sub_Internal, sub_Storage, sub_VirtualDesktop, and sub_Server.
     .PARAMETER VNet
-    Sets the address space in the resource group RG_Networking. Tab complete for 10, 172.32, or 192.168 spaces.
+    Sets the address space in the resource group RG_Networking named VN_Core. Tab complete for 10.0.0.0/16, 
+    172.32.0.0/16, or 192.168.0.0/16 spaces.
     .PARAMETER Subnet
-    Sets the first subnet, and then increments following subnets by one in the following order.
-    .PARAMETER Department
-    Takes the department and captialises if lowercase was used.
-    .PARAMETER Manager
+    Sets the first subnet, and then increments following subnets by one in the following order:
+    sub_Protected 
+    sub_External 
+    sub_Internal
+    sub_Storage
+    sub_VirtualDesktop
+    sub_Server
+    .PARAMETER Location
+    Optional parameter, sets the location, default is currently australiasoutheast. Tab complete enabled for two regions.
+    More will be added once our regions come online.
+    .PARAMETER Custom
+    If you would like to manually specify each subnet, use this parameter, and you will be prompted
+    individually for vnet and subnets.
     .EXAMPLE
-    New-PFOUser
-    Description
-    Just running New-PFOUser will then prompt you for the Name, then the title, then the 
+    New-IASetup -VNet 10.0.0.0/16 -Subnet 10.0.1.0/24 -Location australiaeast
+
+    This will create the following:
+    AZURE RESOURCE      NAME                    LOCATION        ADDRESS         RESOURCE GROUP  ROUTETABLE
+
+    Resoure Group       RG_Networking           Australia East  N/A             N/A
+    Resoure Group       RG_Backup               Australia East  N/A             N/A
+    Resoure Group       RG_Server               Australia East  N/A             N/A
+    Resoure Group       RG_Storage              Australia East  N/A             N/A
+    Resoure Group       RG_VirtualDesktop       Australia East  N/A             N/A
+    
+    Virutal Network     VN_Core                 Australia East  10.0.0.0/16     RG_Networking
+    Route Table         Route-Table             Australia East  0.0.0.0/0       RG_Networking
+    Subnet              sub_Protected           Australia East  10.0.1.0/24     RG_Networking
+    Subnet              sub_External            Australia East  10.0.2.0/24     RG_Networking
+    Subnet              sub_Internal            Australia East  10.0.3.0/24     RG_Networking   Route-Table
+    Subnet              sub_Storage             Australia East  10.0.4.0/24     RG_Networking   Route-Table
+    Subnet              sub_VirtualDesktop      Australia East  10.0.5.0/24     RG_Networking   Route-Table
+    Subnet              sub_Server              Australia East  10.0.6.0/24     RG_Networking   Route-Table
+    NSG                 NSG_Firewall_External   Australia East  N/A             RG_Networking
+    
+    The Route Table sets a default route of 0.0.0.0/0 with a type of next top as Virtual Appliance
+    with the first IP available on the internal subnet. In this case, 10.0.3.4.
+
+    The Network Security Group created will create four rules:
+    NAME                ACCESS      PROTOCOL        DIRECTION       PRIORITY        SOURCE-PREFIX       SOURCEPORTRANGE     DESTINATION-PREFIX      DESTINATIONPORTRANGE        DESCRIPTION
+    Allow_FW_Management Allow       TCP             Inbound         150             *                   *                   10.0.2.4                11443                       Allows firewall management
+    Allow_ICMP          Allow       ICMP            Inbound         151             *                   *                   10.0.2.4                *                           Allows ping
+    Fortigate_SSL_VPN   Allow       *               Inbound         180             *                   *                   10.0.2.4                9443                        Allows VPN traffic
+    Deny_All            Deny        *               Inbound         4096            *                   *                   *                       *                           Deny all traffic
+    
     .EXAMPLE
-    New-PFOUser -Name "iskaral pust" -Title priest -Department clergy -Manager "drone one" -Permissions "drone two" -EmploymentType Permanent -Country 'New Zealand' -Office rotorua -WorkPhone 078885666 -Mobile 0272587116 -Password <password>
-    Description 
+    New-IASetup -Custom
+
+    {PROMPT}-"Please enter the IPv4 address space"                      10.0.0.0/16 {USER-ENTERED}
+    {PROMPT}-"Please enter the subnet address for sub_Protected"        10.0.1.0/24 {USER-ENTERED}
+    {PROMPT}-"Please enter the subnet address for sub_External"         10.0.2.0/24 {USER-ENTERED}
+    {PROMPT}-"Please enter the subnet address for sub_Internal"         10.0.3.0/24 {USER-ENTERED}
+    {PROMPT}-"Please enter the subnet address for sub_Storage"          10.0.4.0/24 {USER-ENTERED}
+    {PROMPT}-"Please enter the subnet address for sub_VirtualDesktop"   10.0.5.0/24 {USER-ENTERED}
+    {PROMPT}-"Please enter the subnet address for sub_Server"           10.0.6.0/24 {USER-ENTERED}
+
+    This will create the following:
+    AZURE RESOURCE      NAME                    LOCATION        ADDRESS         RESOURCE GROUP  ROUTETABLE
+
+    Resoure Group       RG_Networking           Australia East  N/A             N/A
+    Resoure Group       RG_Backup               Australia East  N/A             N/A
+    Resoure Group       RG_Server               Australia East  N/A             N/A
+    Resoure Group       RG_Storage              Australia East  N/A             N/A
+    Resoure Group       RG_VirtualDesktop       Australia East  N/A             N/A
+    
+    Virutal Network     VN_Core                 Australia East  10.0.0.0/16     RG_Networking
+    Route Table         Route-Table             Australia East  0.0.0.0/0       RG_Networking
+    Subnet              sub_Protected           Australia East  10.0.1.0/24     RG_Networking
+    Subnet              sub_External            Australia East  10.0.2.0/24     RG_Networking
+    Subnet              sub_Internal            Australia East  10.0.3.0/24     RG_Networking   Route-Table
+    Subnet              sub_Storage             Australia East  10.0.4.0/24     RG_Networking   Route-Table
+    Subnet              sub_VirtualDesktop      Australia East  10.0.5.0/24     RG_Networking   Route-Table
+    Subnet              sub_Server              Australia East  10.0.6.0/24     RG_Networking   Route-Table
+    NSG                 NSG_Firewall_External   Australia East  N/A             RG_Networking
+    
+    The Route Table sets a default route of 0.0.0.0/0 with a type of next top as Virtual Appliance
+    with the first IP available on the internal subnet. In this case, 10.0.3.4.
+
+    The Network Security Group created will create four rules:
+    NAME                ACCESS      PROTOCOL        DIRECTION       PRIORITY        SOURCE-PREFIX       SOURCEPORTRANGE     DESTINATION-PREFIX      DESTINATIONPORTRANGE        DESCRIPTION
+    Allow_FW_Management Allow       TCP             Inbound         150             *                   *                   10.0.2.4                11443                       Allows firewall management
+    Allow_ICMP          Allow       ICMP            Inbound         151             *                   *                   10.0.2.4                *                           Allows ping
+    Fortigate_SSL_VPN   Allow       *               Inbound         180             *                   *                   10.0.2.4                9443                        Allows VPN traffic
+    Deny_All            Deny        *               Inbound         4096            *                   *                   *                       *                           Deny all traffic
     #>
 
     [cmdletbinding(DefaultParameterSetName='vnet')]
@@ -154,7 +233,7 @@ function New-IASetup {
 
             New-AzNetworkSecurityGroup -ResourceGroupName "RG_Networking" -Location $Location -Name "NSG_Firewall_External" -SecurityRules $rule1,$rule2,$rule3,$rule4 | Out-Null
 
-            #PublicIP
+            <#PublicIP
             New-AzPublicIpAddress -Name "FGT_PublicIP" -ResourceGroupName "RG_Networking" -Location $Location -Sku Basic -AllocationMethod Static -IpAddressVersion IPv4 | Out-Null
 
             #Internal FGT interface
@@ -168,7 +247,7 @@ function New-IASetup {
             $GetExternalNICSubnet = Get-AzVirtualNetwork
             $SubnetID = $GetExternalNICSubnet.subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty Id
             New-AzNetworkInterface -Name "EXT_FGT_NWI" -ResourceGroupName "RG_Networking" -Location $Location -SubnetId $SubnetID -PublicIpAddressId $PublicIP -NetworkSecurityGroupId $NSG -EnableIPForwarding | Out-Null
-   
+            #>
         } 
         
         if ($VNet) {
@@ -263,7 +342,7 @@ function New-IASetup {
 
             New-AzNetworkSecurityGroup -ResourceGroupName "RG_Networking" -Location $Location -Name "NSG_Firewall_External" -SecurityRules $rule1,$rule2,$rule3,$rule4 | Out-Null
 
-            #PublicIP
+            <#PublicIP
             New-AzPublicIpAddress -Name "FGT_PublicIP" -ResourceGroupName "RG_Networking" -Location $Location -Sku Basic -AllocationMethod Static -IpAddressVersion IPv4 | Out-Null
 
             #Internal FGT interface
@@ -277,7 +356,7 @@ function New-IASetup {
             $GetExternalNICSubnet = Get-AzVirtualNetwork
             $SubnetID = $GetExternalNICSubnet.subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty Id
             New-AzNetworkInterface -Name "EXT_FGT_NWI" -ResourceGroupName "RG_Networking" -Location $Location -SubnetId $SubnetID -PublicIpAddressId $PublicIP -NetworkSecurityGroupId $NSG -EnableIPForwarding | Out-Null
-
+            #>
         }
 
     }
