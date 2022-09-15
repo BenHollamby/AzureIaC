@@ -1,6 +1,37 @@
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
 function New-IASetup {
 
+    <#
+    .SYNOPSIS
+    New-IASetup (New Ignite Azure Setup) will create multiple resource based on an existing best practice configuration.
+    .DESCRIPTION
+    New-IASetup will create 5 resource groups named RG_Networking, RG_Backup, RG_Server, 
+    RG_Storage, and RG_VirtualDesktop.
+    It will also create a virtual network based on the VNET parameter.
+    New-IASetup will create 6 subnets starting either sequentially from the Subnet parameter incrementing by 1 or 
+    prompted for each subnet with the Custom parameter. Subnets created are named, sub_Protected,
+    sub_External, sub_Internal, sub_Storage, sub_VirtualDesktop, and sub_Server.
+    A network security group with 4 rules, Allow Firewall Management on port 11443, Allow Ping,
+    Allow VPN, and Deny All.
+    Lastly a Route Table is created with address prefix of 0.0.0.0/0 with a next hop to a Virtual Appliance, 
+    and sets the next hop IP address to X.X.X.4 based on the subnet sub_Internal's address space. It attaches 
+    the following subnets, sub_Internal, sub_Storage, sub_VirtualDesktop, and sub_Server.
+    .PARAMETER VNet
+    Sets the address space in the resource group RG_Networking. Tab complete for 10, 172.32, or 192.168 spaces.
+    .PARAMETER Subnet
+    Sets the first subnet, and then increments following subnets by one in the following order.
+    .PARAMETER Department
+    Takes the department and captialises if lowercase was used.
+    .PARAMETER Manager
+    .EXAMPLE
+    New-PFOUser
+    Description
+    Just running New-PFOUser will then prompt you for the Name, then the title, then the 
+    .EXAMPLE
+    New-PFOUser -Name "iskaral pust" -Title priest -Department clergy -Manager "drone one" -Permissions "drone two" -EmploymentType Permanent -Country 'New Zealand' -Office rotorua -WorkPhone 078885666 -Mobile 0272587116 -Password <password>
+    Description 
+    #>
+
     [cmdletbinding(DefaultParameterSetName='vnet')]
 
     param(
