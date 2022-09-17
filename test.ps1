@@ -1,0 +1,1 @@
+New-AzStorageAccount -ResourceGroupName "RG_Storage" -Location 'australiaeast' -Name "teststora19851507" -SkuName Standard_LRS -Kind StorageV2 -MinimumTlsVersion TLS1_2
