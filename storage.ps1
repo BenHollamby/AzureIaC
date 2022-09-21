@@ -1,5 +1,5 @@
 $VMLocalAdminUser = "fortigateuser"
-$VMLocalAdminSecurePassword = ConvertTo-SecureString 'DEftonesDeft0nes!' -AsPlainText -Force
+$VMLocalAdminSecurePassword = ConvertTo-SecureString 'password' -AsPlainText -Force
 $LocationName = "australiaeast"
 $ResourceGroupName = "RG_Networking"
 $ComputerName = "FGT-01"
@@ -21,6 +21,23 @@ $VirtualMachine = Set-AzVMOperatingSystem -VM $VirtualMachine -Linux -ComputerNa
 $VirtualMachine = Add-AzVMNetworkInterface -VM $VirtualMachine -Id $NIC -Primary
 $VirtualMachine = Add-AzVMNetworkInterface -VM $VirtualMachine -Id $INTNIC
 new-azvm -ImageReferenceId $refid -ResourceGroupName RG_Networking -Location australiaeast
+
+#NEED
+<#
+Region
+username
+password
+nameprefix
+sku
+version
+size
+external subnet
+internal subnet
+protected subnet
+public ip
+
+#>
+
 
 ####
 #$refid = (Get-AzVMImage -Location australiaeast -PublisherName fortinet -Offer fortinet_fortigate-vm_v5 -Skus fortinet_fg-vm_payg_2022 -Version 7.2.1).Id
