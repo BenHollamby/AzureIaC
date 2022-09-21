@@ -1,10 +1,11 @@
 $VMLocalAdminUser = "fortigateuser"
-$VMLocalAdminSecurePassword = ConvertTo-SecureString "password" -AsPlainText -Force
+$VMLocalAdminSecurePassword = ConvertTo-SecureString 'DEftonesDeft0nes!' -AsPlainText -Force
 $LocationName = "australiaeast"
 $ResourceGroupName = "RG_Networking"
 $ComputerName = "FGT-01"
-$VMName = (Get-AzVMImage -Location "australiaeast" -PublisherName "Fortinet" -Offer "fortinet_fortigate-vm_v5" -Skus "fortinet_fg-vm_payg_2022" -Version 7.2.1).Id
+$VMName = "fgt-01"
 $VMSize = "Standard_DS1_v2"
+$refid = (Get-AzVMImage -Location australiaeast -PublisherName fortinet -Offer fortinet_fortigate-vm_v5 -Skus fortinet_fg-vm_payg_2022 -Version 7.2.1).Id
 
 $NIC = (Get-AzNetworkInterface).id[0]
 $INTNIC = (Get-AzNetworkInterface).id[1]
@@ -14,15 +15,18 @@ $agreementterms = get-azmarketplaceterms -Publisher "Fortinet" -Product "fortine
 Set-AzMarketplaceTerms -Publisher "Fortinet" -Product "fortinet_fortigate-vm_v5" -Name "fortinet_fg-vm" -Terms $agreementTerms -Accept
 
 $VirtualMachine = New-AzVMConfig -VMName $VMName -VMSize $VMSize 
-$VirtualMachine = Set-AzVMSourceImage -VM $VirtualMachine -PublisherName 'Fortinet' -Offer -Skus 'fortinet_fg-vm' -Version '7.2.1'
+$VirtualMachine = Set-AzVMSourceImage -VM $VirtualMachine -PublisherName 'Fortinet' -Offer "fortinet_fortigate-vm_v5" -Skus 'fortinet_fg-vm' -Version '7.2.1'
 $VirtualMachine = Set-AzVMPlan -VM $VirtualMachine -Publisher 'Fortinet' -Product 'fortinet_fortigate-vm_v5' -Name 'fortinet_fg-vm'
 $VirtualMachine = Set-AzVMOperatingSystem -VM $VirtualMachine -Linux -ComputerName $ComputerName -Credential $Credential
 $VirtualMachine = Add-AzVMNetworkInterface -VM $VirtualMachine -Id $NIC -Primary
 $VirtualMachine = Add-AzVMNetworkInterface -VM $VirtualMachine -Id $INTNIC
+new-azvm -ImageReferenceId $refid -ResourceGroupName RG_Networking -Location australiaeast
 
+####
+#$refid = (Get-AzVMImage -Location australiaeast -PublisherName fortinet -Offer fortinet_fortigate-vm_v5 -Skus fortinet_fg-vm_payg_2022 -Version 7.2.1).Id
+###
 
-
-New-AzVM -ResourceGroupName $ResourceGroupName -Location $LocationName -VM $VirtualMachine -
+#New-AzVM -ResourceGroupName $ResourceGroupName -Location $LocationName -VM $VirtualMachine -
 
 #Get-AzVMImage -Location "australiaeast" -PublisherName "Fortinet" -Offer "fortinet_fortigate-vm_v5" -Skus "fortinet_fg-vm_payg_2022" -Version "latest"
 
