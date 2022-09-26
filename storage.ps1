@@ -1,5 +1,5 @@
 $VMLocalAdminUser = "fortigateuser"
-$VMLocalAdminSecurePassword = ConvertTo-SecureString 'password' -AsPlainText -Force
+$VMLocalAdminSecurePassword = ConvertTo-SecureString 'DEft0nesDEft0nes' -AsPlainText -Force
 $LocationName = "australiaeast"
 $ResourceGroupName = "RG_Networking"
 $ComputerName = "FGT-01"

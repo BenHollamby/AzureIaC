@@ -34,3 +34,6 @@ New-AzStorageAccount -ResourceGroupName "RG_Storage" -Location 'australiaeast' -
   28        0.025 get-history
   29       16.970 New-AzVM -ResourceGroupName 'RG_Networking' -Location 'australiaeast' -VM $virtualmachine -Verbose
   #>
+
+
+  #https://mcpmag.com/articles/2019/07/16/powershell-for-parametrized-arm-templates.aspx

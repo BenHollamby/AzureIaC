@@ -1,8 +1,18 @@
-targetScope = 'subscription'
+param location string = resourceGroup().location
+param namePrefix string = 'bootdiag'
 
-param location string
+var storageAccountName = '${namePrefix}${uniqueString(resourceGroup().id)}'
+var storageAccountSku = 'Standard_RAGRS'
 
-resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: 'RG-TEST'
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
+  name: storageAccountName
   location: location
+  kind: 'StorageV2'
+  sku: {
+    name: storageAccountSku
+  }
+  properties: {
+    accessTier: 'Hot'
+    supportsHttpsTrafficOnly: true
+  }
 }

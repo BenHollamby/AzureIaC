@@ -4,12 +4,14 @@
     "parameters": {
       "location": {
         "type": "string",
+        "defaultValue": "australiaeast",
         "metadata": {
           "description": "location - same as above"
         }
       },
       "adminUsername": {
         "type": "string",
+        "defaultValue": "fortiadmin",
         "metadata": {
           "description": "Username for the FortiGate virtual appliance."
         }
@@ -22,6 +24,7 @@
       },
       "FortiGateName": {
         "type": "string",
+        "defaultValue": "SW-FGT-01",
         "metadata": {
           "description": "Name for FortiGate virtual appliance."
         }
@@ -70,14 +73,14 @@
       },
       "publicIPAddressName": {
         "type": "string",
-        "defaultValue": "PublicIPNameHere",
+        "defaultValue": "FGT-PIP-01",
         "metadata": {
           "description": "Name of Public IP address resource."
         }
       },
       "publicIPResourceGroup": {
         "type": "string",
-        "defaultValue": "PublicIPResourceGroupHere",
+        "defaultValue": "RG_Networking",
         "metadata": {
           "description": "Resource Group containing the public IP - or new resource group from above (if new public IP)"
         }
@@ -95,7 +98,7 @@
       },
       "vnetNewOrExisting": {
         "type": "string",
-        "defaultValue": "new",
+        "defaultValue": "existing",
         "allowedValues": [
           "new",
           "existing"
@@ -106,48 +109,49 @@
       },
       "vnetName": {
         "type": "string",
+        "defaultValue": "VN_Core",
         "metadata": {
           "description": "Name of the Azure virtual network."
         }
       },
       "vnetResourceGroup": {
         "type": "string",
-        "defaultValue": "",
+        "defaultValue": "RG_Networking",
         "metadata": {
           "description": "Resource Group containing the virtual network - or new resource group from above (if new vnet)"
         }
       },
       "vnetAddressPrefix": {
         "type": "string",
-        "defaultValue": "",
+        "defaultValue": "10.0.0.0/16",
         "metadata": {
           "description": "Virtual network address space in CIDR notation, example: 10.2.0.0/16"
         }
       },
       "Subnet1Name": {
         "type": "string",
-        "defaultValue": "",
+        "defaultValue": "sub_External",
         "metadata": {
           "description": "Subnet 1 Name"
         }
       },
       "Subnet1Prefix": {
         "type": "string",
-        "defaultValue": "",
+        "defaultValue": "10.0.2.0/24",
         "metadata": {
           "description": "Subnet 1 Prefix in CIDR notation (if using public IP, this will be the 'WAN' or external port), example: 10.2.1.0/24"
         }
       },
       "Subnet2Name": {
         "type": "string",
-        "defaultValue": "",
+        "defaultValue": "sub_Internal",
         "metadata": {
           "description": "Subnet 2 Name"
         }
       },
       "Subnet2Prefix": {
         "type": "string",
-        "defaultValue": "",
+        "defaultValue": "10.0.3.0/24",
         "metadata": {
           "description": "Subnet 2 Prefix in CIDR notation (if using public IP, this will be the 'WAN' or external port), example: 10.2.2.0/24"
         }
@@ -173,16 +177,12 @@
       
       "publicIPID": "[resourceId(parameters('publicIPResourceGroup'), 'Microsoft.Network/publicIPAddresses', parameters('publicIPAddressName'))]",
   
-      "routeTable1Name": "[concat(parameters('FortiGateName'), '-', parameters('Subnet1Name'),'-routes-',uniquestring(deployment().name))]",
-      "routeTable2Name": "[concat(parameters('FortiGateName'), '-', parameters('Subnet2Name'),'-routes-',uniquestring(deployment().name))]",
-  
       "network_NIC_fg11_Name": "[concat(parameters('FortiGateName'),'-Nic0-',uniquestring(deployment().name))]",
       "network_NIC_fg11_Id": "[resourceId('Microsoft.Network/networkInterfaces',variables('network_NIC_fg11_Name'))]",
       "network_NIC_fg12_Name": "[concat(parameters('FortiGateName'),'-Nic1-',uniquestring(deployment().name))]",
       "network_NIC_fg12_Id": "[resourceId('Microsoft.Network/networkInterfaces',variables('network_NIC_fg12_Name'))]",
   
       "compute_AvailabilitySet_FG_Name": "[concat(parameters('FortiGateName'),'-AvailabilitySet-',uniquestring(deployment().name))]",
-      "compute_AvailabilitySet_FG_Id": "[resourceId('Microsoft.Compute/availabilitySets', variables('compute_AvailabilitySet_FG_Name'))]",
   
       "updateIPURI": "[concat(parameters('ArtifactsBaseURI'),'/update-nic.json')]",
       "virtualNetworkSetupURL": "[concat(parameters('ArtifactsBaseURI'),'/vnetsetup.json')]"
@@ -420,26 +420,14 @@
             "subnet1AddressPrefix": {
               "value": "[parameters('Subnet1Prefix')]"
             },
-            "subnet1NextHop": {
-              "value": "[reference(concat('Microsoft.Network/networkInterfaces/', variables('network_NIC_fg11_Name'))).ipConfigurations[0].properties.privateIPAddress]"
-            },
             "subnet2Name": {
               "value": "[parameters('Subnet2Name')]"
             },
             "subnet2AddressPrefix": {
               "value": "[parameters('Subnet2Prefix')]"
             },
-            "subnet2NextHop": {
-              "value": "[reference(concat('Microsoft.Network/networkInterfaces/', variables('network_NIC_fg11_Name'))).ipConfigurations[0].properties.privateIPAddress]"
-            },
             "vnetResourceGroup": {
               "value": "[parameters('vnetResourceGroup')]"
-            },
-            "routeTable1Name": {
-              "value": "[variables('routeTable1Name')]"
-            },
-            "routeTable2Name": {
-              "value": "[variables('routeTable2Name')]"
             },
             "FortinetTags": {
               "value": "[parameters('FortinetTags')]"
@@ -466,9 +454,6 @@
         "properties": {
           "hardwareProfile": {
             "vmSize": "[parameters('instanceType')]"
-          },
-          "availabilitySet": {
-            "id": "[variables('compute_AvailabilitySet_FG_Id')]"
           },
           "osProfile": {
             "computerName": "[parameters('FortiGateName')]",
