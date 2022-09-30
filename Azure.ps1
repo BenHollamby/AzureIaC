@@ -344,6 +344,23 @@ function New-IASetup {
             #PublicIP
             New-AzPublicIpAddress -Name "FGT_PublicIP" -ResourceGroupName "RG_Networking" -Location $Location -Sku Basic -AllocationMethod Static -IpAddressVersion IPv4 | Out-Null
 
+            #ARM TEMPLATE
+            New-AzResourceGroupDeployment -TemplateFile .\azuredeploy.json -TemplateParameterFile .\azuredeploy.parameters.json -ResourceGroupName RG_Networking | Out-Null
+
+            #NETWORK INTERFACE TIDY UP
+            $NIC1 = (get-azNetworkInterface)[0]
+            $NIC2 = (Get-AzNetworkInterface)[1]
+            $NSG1 = Get-AzNetworkSecurityGroup | Where-Object name -like "NSG*"
+            $NSG2 = Get-AzNetworkSecurityGroup | Where-Object name -notlike "NSG*"
+            $NIC1.NetworkSecurityGroup = $NSG1
+            $NIC1 | Set-AzNetworkInterface | Out-Null
+            $NIC2.NetworkSecurityGroup = $NSG1
+            $NIC2 | Set-AzNetworkInterface | Out-Null
+            $NSG2 | Remove-AzNetworkSecurityGroup -force
+
+            #Remove Route
+
+            <#
             #Internal FGT interface
             $GetInternalNIC = Get-AzVirtualNetwork
             $SubnetID = $GetInternalNIC.subnets | Where-Object name -eq sub_Internal | Select-Object -ExpandProperty Id
@@ -355,6 +372,7 @@ function New-IASetup {
             $GetExternalNICSubnet = Get-AzVirtualNetwork
             $SubnetID = $GetExternalNICSubnet.subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty Id
             New-AzNetworkInterface -Name "EXT_FGT_NWI" -ResourceGroupName "RG_Networking" -Location $Location -SubnetId $SubnetID -PublicIpAddressId $PublicIP -NetworkSecurityGroupId $NSG -EnableIPForwarding | Out-Null
+            #>
             <#
             Get-AzVMImage -Location australiaeast -PublisherName Fortinet -Offer fortinet_fortigate-vm_v5 -Skus fortinet_fg-vm_payg_2022 -Version 7.2.1
             

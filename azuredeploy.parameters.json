@@ -3,13 +3,13 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "adminUsername": {
-            "value": "## TO BE DEFINED ##"
+            "value": "fortiadmin"
         },
         "adminPassword": {
-            "value": "## TO BE DEFINED ##"
+            "value": "supersecurepasswordinfile"
         },
         "fortiGateNamePrefix": {
-            "value": "## TO BE DEFINED ##"
+            "value": "SW"
         },
         "fortiGateImageSKU": {
             "value": "fortinet_fg-vm"
@@ -24,16 +24,16 @@
             "value": "Standard_F2s"
         },
         "acceleratedNetworking": {
-            "value": "false"
+            "value": "true"
         },
         "publicIP1NewOrExisting": {
-            "value": "new"
+            "value": "existing"
         },
         "publicIP1Name": {
-            "value": ""
+            "value": "FGT_PublicIP"
         },
         "publicIP1ResourceGroup": {
-            "value": ""
+            "value": "RG_Networking"
         },
         "publicIP1AddressType": {
             "value": "Static"
@@ -42,40 +42,40 @@
             "value": "Standard"
         },
         "vnetNewOrExisting": {
-            "value": "new"
+            "value": "existing"
         },
         "vnetName": {
-            "value": ""
+            "value": "VN_Core"
         },
         "vnetResourceGroup": {
-            "value": ""
+            "value": "RG_Networking"
         },
         "vnetAddressPrefix": {
-            "value": "172.16.136.0/22"
+            "value": "10.0.0.0/16"
         },
         "subnet1Name": {
-            "value": "ExternalSubnet"
+            "value": "sub_External"
         },
         "subnet1Prefix": {
-            "value": "172.16.136.0/26"
+            "value": "10.0.2.0/24"
         },
         "subnet1StartAddress": {
-            "value": "172.16.136.4"
+            "value": "10.0.2.4"
         },
         "subnet2Name": {
-            "value": "InternalSubnet"
+            "value": "sub_Internal"
         },
         "subnet2Prefix": {
-            "value": "172.16.136.64/26"
+            "value": "10.0.3.0/24"
         },
         "subnet2StartAddress": {
-            "value": "172.16.136.68"
+            "value": "10.0.3.4"
         },
         "subnet3Name": {
-            "value": "ProtectedASubnet"
+            "value": "sub_Protected"
         },
         "subnet3Prefix": {
-            "value": "172.16.137.0/24"
+            "value": "10.0.1.0/24"
         },
         "serialConsole": {
             "value": "yes"
@@ -96,7 +96,7 @@
             "value": ""
         },
         "location": {
-            "value": ""
+            "value": "australiaeast"
         },
         "fortinetTags": {
             "value": {
