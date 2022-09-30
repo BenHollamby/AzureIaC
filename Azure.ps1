@@ -357,7 +357,8 @@ function New-IASetup {
             $NIC2.NetworkSecurityGroup = $NSG1
             $NIC2 | Set-AzNetworkInterface | Out-Null
             $NSG2 | Remove-AzNetworkSecurityGroup -force
-
+            Get-AzRouteTable | where-object name -NE "Route-Table" | Remove-AzRouteTable -force
+            
             #Remove Route
 
             <#
