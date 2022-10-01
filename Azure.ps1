@@ -344,6 +344,7 @@ function New-IASetup {
             #PublicIP
             New-AzPublicIpAddress -Name "FGT_PublicIP" -ResourceGroupName "RG_Networking" -Location $Location -Sku Basic -AllocationMethod Static -IpAddressVersion IPv4 | Out-Null
 
+            <#
             #ARM TEMPLATE
             New-AzResourceGroupDeployment -TemplateFile .\azuredeploy.json -TemplateParameterFile .\azuredeploy.parameters.json -ResourceGroupName RG_Networking | Out-Null
 
@@ -361,7 +362,7 @@ function New-IASetup {
             
             #Remove Route
 
-            <#
+            
             #Internal FGT interface
             $GetInternalNIC = Get-AzVirtualNetwork
             $SubnetID = $GetInternalNIC.subnets | Where-Object name -eq sub_Internal | Select-Object -ExpandProperty Id

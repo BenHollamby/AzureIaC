@@ -6,7 +6,7 @@
             "value": "fortiadmin"
         },
         "adminPassword": {
-            "value": "Supersecurepasswordinfile!"
+            "value": "supersecurepasswordinfile"
         },
         "fortiGateNamePrefix": {
             "value": "SW"
@@ -57,25 +57,25 @@
             "value": "sub_External"
         },
         "subnet1Prefix": {
-            "value": "10.0.2.0/24"
+            "value": ""
         },
         "subnet1StartAddress": {
-            "value": "10.0.2.4"
+            "value": "10.0.2.4/24"
         },
         "subnet2Name": {
             "value": "sub_Internal"
         },
         "subnet2Prefix": {
-            "value": "10.0.3.0/24"
+            "value": "SWARMINTERNALSUBNETPREFIX"
         },
         "subnet2StartAddress": {
-            "value": "10.0.3.4"
+            "value": "SWARMINTERNALSUBNETSTARTADDRESS"
         },
         "subnet3Name": {
             "value": "sub_Protected"
         },
         "subnet3Prefix": {
-            "value": "10.0.1.0/24"
+            "value": "SWARMPROTECTEDSUBNETPREFIX"
         },
         "serialConsole": {
             "value": "yes"
@@ -96,7 +96,7 @@
             "value": ""
         },
         "location": {
-            "value": "australiaeast"
+            "value": "SWARMLOCATION"
         },
         "fortinetTags": {
             "value": {
