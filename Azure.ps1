@@ -344,7 +344,31 @@ function New-IASetup {
             #PublicIP
             New-AzPublicIpAddress -Name "FGT_PublicIP" -ResourceGroupName "RG_Networking" -Location $Location -Sku Basic -AllocationMethod Static -IpAddressVersion IPv4 | Out-Null
 
-            <#
+            #ARM TEMPLATE PARAMETERS
+            $swarmvnetaddressprefix = [string](Get-AzVirtualNetwork).AddressSpace.AddressPrefixes
+            $swarmexternalsubnetprefix = (Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty addressprefix
+            $StartAddress = (Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty addressprefix
+            $StartAddress = $StartAddress.split(".").split("/")
+            $StartAddress[3] = '4'
+            $StartAddress = $StartAddress[0] + '.' + $StartAddress[1] + '.' + $StartAddress[2] + '.' + $StartAddress[3] + '/' + $StartAddress[4]
+            $swarmexternalsubnetstartaddress = $StartAddress
+            $swarminternalsubnetprefix = (Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_Internal | Select-Object -ExpandProperty addressprefix
+            $StartAddress = (Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_Internal | Select-Object -ExpandProperty addressprefix
+            $StartAddress = $StartAddress.split(".").split("/")
+            $StartAddress[3] = '4'
+            $StartAddress = $StartAddress[0] + '.' + $StartAddress[1] + '.' + $StartAddress[2] + '.' + $StartAddress[3] + '/' + $StartAddress[4]
+            $swarminternalsubnetstartaddress = $StartAddress
+            $swarmprotectedsubnetprefix = (Get-AzVirtualNetwork).subnets | Where-Object name -eq sub_Protected | Select-Object -ExpandProperty addressprefix
+            $swarmlocation = (Get-AzVirtualNetwork).Location
+            (Get-Content .\azuredeploy.parameters.json).replace('SWARMVNETADDRESSPREFIX', $swarmvnetaddressprefix) | Set-Content .\azuredeploy.parameters.json
+            (Get-Content .\azuredeploy.parameters.json).replace('SWARMEXTERNALSUBNETPREFIX', $swarmexternalsubnetprefix) | Set-Content .\azuredeploy.parameters.json
+            (Get-Content .\azuredeploy.parameters.json).replace('SWARMEXTERNALSUBNETSTARTADDRESS', $swarmexternalsubnetstartaddress) | Set-Content .\azuredeploy.parameters.json
+            (Get-Content .\azuredeploy.parameters.json).replace('SWARMINTERNALSUBNETPREFIX', $swarminternalsubnetprefix) | Set-Content .\azuredeploy.parameters.json
+            (Get-Content .\azuredeploy.parameters.json).replace('SWARMINTERNALSUBNETSTARTADDRESS', $swarminternalsubnetstartaddress) | Set-Content .\azuredeploy.parameters.json
+            (Get-Content .\azuredeploy.parameters.json).replace('SWARMPROTECTEDSUBNETPREFIX', $swarmprotectedsubnetprefix) | Set-Content .\azuredeploy.parameters.json
+            (Get-Content .\azuredeploy.parameters.json).replace('SWARMLOCATION', $swarmlocation) | Set-Content .\azuredeploy.parameters.json
+
+            
             #ARM TEMPLATE
             New-AzResourceGroupDeployment -TemplateFile .\azuredeploy.json -TemplateParameterFile .\azuredeploy.parameters.json -ResourceGroupName RG_Networking | Out-Null
 
@@ -360,190 +384,6 @@ function New-IASetup {
             $NSG2 | Remove-AzNetworkSecurityGroup -force
             Get-AzRouteTable | where-object name -NE "Route-Table" | Remove-AzRouteTable -force
             
-            #Remove Route
-
-            
-            #Internal FGT interface
-            $GetInternalNIC = Get-AzVirtualNetwork
-            $SubnetID = $GetInternalNIC.subnets | Where-Object name -eq sub_Internal | Select-Object -ExpandProperty Id
-            New-AzNetworkInterface -Name "INT_FGT_NWI" -ResourceGroupName "RG_Networking" -Location $Location -SubnetId $SubnetID -EnableIPForwarding | Out-Null
-
-            #External FGT Interface
-            $PublicIP = (Get-AzPublicIpAddress).Id
-            $NSG = (Get-AzNetworkSecurityGroup).Id
-            $GetExternalNICSubnet = Get-AzVirtualNetwork
-            $SubnetID = $GetExternalNICSubnet.subnets | Where-Object name -eq sub_External | Select-Object -ExpandProperty Id
-            New-AzNetworkInterface -Name "EXT_FGT_NWI" -ResourceGroupName "RG_Networking" -Location $Location -SubnetId $SubnetID -PublicIpAddressId $PublicIP -NetworkSecurityGroupId $NSG -EnableIPForwarding | Out-Null
-            #>
-            <#
-            Get-AzVMImage -Location australiaeast -PublisherName Fortinet -Offer fortinet_fortigate-vm_v5 -Skus fortinet_fg-vm_payg_2022 -Version 7.2.1
-            
-            #agree to terms
-            $agreementTerms = Get-AzMarketplaceterms -Publisher "Fortinet" -Product "fortinet_fortigate-vm_v5" -Name "fortinet_fg-vm_payg_2022"
-            Set-AzMarketplaceTerms -Publisher "Fortinet" -Product "fortinet_fortigate-vm_v5" -Name "fortinet_fg-vm_payg_2022" -Terms $agreementTerms -Accept
-
-            $vmConfig = New-AzVMConfig -VMName "FGT-VM-01" -VMSize Standard_DS1_v2
-            $offername = "fortinet_fortigate-vm_v5"
-            $skuname = "fortinet_fg-vm_payg_2022"
-            $version = "2.7.1"
-            $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Fortinet -Offer $offername -Skus $skuname -Version $version
-
-            #create storage account in sub_server
-            {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "storageAccounts_tawdiagnostics_name": {
-            "defaultValue": "tawdiagnostics",
-            "type": "String"
-        }
-    },
-    "variables": {},
-    "resources": [
-        {
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2022-05-01",
-            "name": "[parameters('storageAccounts_tawdiagnostics_name')]",
-            "location": "australiasoutheast",
-            "sku": {
-                "name": "Standard_LRS",
-                "tier": "Standard"
-            },
-            "kind": "StorageV2",
-            "properties": {
-                "minimumTlsVersion": "TLS1_2",
-                "allowBlobPublicAccess": true,
-                "networkAcls": {
-                    "bypass": "AzureServices",
-                    "virtualNetworkRules": [],
-                    "ipRules": [],
-                    "defaultAction": "Allow"
-                },
-                "supportsHttpsTrafficOnly": true,
-                "encryption": {
-                    "services": {
-                        "file": {
-                            "keyType": "Account",
-                            "enabled": true
-                        },
-                        "blob": {
-                            "keyType": "Account",
-                            "enabled": true
-                        }
-                    },
-                    "keySource": "Microsoft.Storage"
-                },
-                "accessTier": "Hot"
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/blobServices",
-            "apiVersion": "2022-05-01",
-            "name": "[concat(parameters('storageAccounts_tawdiagnostics_name'), '/default')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tawdiagnostics_name'))]"
-            ],
-            "sku": {
-                "name": "Standard_LRS",
-                "tier": "Standard"
-            },
-            "properties": {
-                "cors": {
-                    "corsRules": []
-                },
-                "deleteRetentionPolicy": {
-                    "allowPermanentDelete": false,
-                    "enabled": false
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/fileServices",
-            "apiVersion": "2022-05-01",
-            "name": "[concat(parameters('storageAccounts_tawdiagnostics_name'), '/default')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tawdiagnostics_name'))]"
-            ],
-            "sku": {
-                "name": "Standard_LRS",
-                "tier": "Standard"
-            },
-            "properties": {
-                "protocolSettings": {
-                    "smb": {}
-                },
-                "cors": {
-                    "corsRules": []
-                },
-                "shareDeleteRetentionPolicy": {
-                    "enabled": true,
-                    "days": 7
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/queueServices",
-            "apiVersion": "2022-05-01",
-            "name": "[concat(parameters('storageAccounts_tawdiagnostics_name'), '/default')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tawdiagnostics_name'))]"
-            ],
-            "properties": {
-                "cors": {
-                    "corsRules": []
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/tableServices",
-            "apiVersion": "2022-05-01",
-            "name": "[concat(parameters('storageAccounts_tawdiagnostics_name'), '/default')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tawdiagnostics_name'))]"
-            ],
-            "properties": {
-                "cors": {
-                    "corsRules": []
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-            "apiVersion": "2022-05-01",
-            "name": "[concat(parameters('storageAccounts_tawdiagnostics_name'), '/default/bootdiagnostics-tawazured-8eec9ea9-1f55-41df-be74-d1305bd6c766')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_tawdiagnostics_name'), 'default')]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tawdiagnostics_name'))]"
-            ],
-            "properties": {
-                "immutableStorageWithVersioning": {
-                    "enabled": false
-                },
-                "defaultEncryptionScope": "$account-encryption-key",
-                "denyEncryptionScopeOverride": false,
-                "publicAccess": "None"
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-            "apiVersion": "2022-05-01",
-            "name": "[concat(parameters('storageAccounts_tawdiagnostics_name'), '/default/bootdiagnostics-tawazured-cf5f4c4c-f2d9-446a-a9de-02e7c68b988e')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_tawdiagnostics_name'), 'default')]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tawdiagnostics_name'))]"
-            ],
-            "properties": {
-                "immutableStorageWithVersioning": {
-                    "enabled": false
-                },
-                "defaultEncryptionScope": "$account-encryption-key",
-                "denyEncryptionScopeOverride": false,
-                "publicAccess": "None"
-            }
-        }
-    ]
-}
-            #>
         }
 
     }
