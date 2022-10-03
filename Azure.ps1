@@ -115,6 +115,7 @@ function New-IASetup {
     param(
 
         [Parameter(
+            Mandatory,
             ValueFromPipeline,
             ValueFromPipelineByPropertyName,
             ParameterSetName='vnet',
@@ -124,6 +125,7 @@ function New-IASetup {
         [string]$Location = "australiasoutheast",
 
         [Parameter(
+            Mandatory,
             ValueFromPipeline,
             ValueFromPipelineByPropertyName,
             ParameterSetName='vnet',
@@ -133,6 +135,7 @@ function New-IASetup {
         [string]$VNet,
 
         [Parameter(
+            Mandatory,
             ValueFromPipeline,
             ValueFromPipelineByPropertyName,
             ParameterSetName='vnet',
@@ -140,6 +143,16 @@ function New-IASetup {
         )]
         [ArgumentCompleter({'10.0.1.0/24','172.32.1.0/24','192.168.129.0/24'})]
         [string[]]$Subnet,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='vnet',
+            HelpMessage = "Subnet starting address, this will increment by one, six times creating new subnets"
+        )]
+        [ArgumentCompleter({'10.0.1.0/24','172.32.1.0/24','192.168.129.0/24'})]
+        [string[]]$Prefix,
 
         [Parameter(
             ParameterSetName='custom',
